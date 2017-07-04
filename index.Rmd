@@ -1,0 +1,73 @@
+---
+title: "Air Quality Time Series"
+author: "hangulandy"
+date: "7/3/2017"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+## Executive Summary
+
+This project attempts to show airquality features as a time series using the plotly package to create an interactive graph.
+
+## Data
+
+The data used for this project are the airquality data that come with the datasets package. 
+
+```{r}
+dat <- airquality
+```
+
+## Impute Missing Data
+
+### NA Values
+
+As seen here, there are only two features with missing values.
+
+```{r}
+apply(apply(dat, 2, is.na), 2, sum)
+```
+
+I used the median feature value to impute missing values in order to retain all available days in the time series.
+
+```{r}
+for (i in 1:ncol(dat)) {
+        if(sum(is.na(dat[, i])) > 0) {
+                temp <- median(dat[, i], na.rm = TRUE)
+                dat[is.na(dat[, i]), i] <- temp
+        }
+}
+```
+
+## Making the Time Series
+
+### Building the Date
+
+In order to make the time series data, I had to create a date with existing data.  The dataset comes from data in 1973 (according to the documentation).
+
+```{r}
+dat$Year <- as.integer(1973)
+dat$Dt <- paste(dat$Month , dat$Day , dat$Year, sep = ".")
+library(lubridate)
+dat$Dt <- mdy(dat$Dt)
+```
+
+### Collapsing to Key Values
+
+```{r}
+library(tidyr)
+dat <- gather(dat, index, measure, 1:4)
+```
+
+## Plot the Time Series
+
+```{r}
+library(plotly)
+with(dat, plot_ly(x = Dt, y = measure, mode = "lines", color = index))
+```
+
+# Thank You!
+
